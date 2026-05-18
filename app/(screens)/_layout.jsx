@@ -1,17 +1,15 @@
 import { AuthContext } from '@/context/AuthContext';
-import { Entypo, Ionicons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import React, { useContext } from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
-import { Avatar, Button, Colors, Text, View } from 'react-native-ui-lib';
+import { Dimensions, Image, StyleSheet } from 'react-native';
+import { Avatar, Colors, Text, View } from 'react-native-ui-lib';
 
 const windowWidth = Dimensions.get("window").width;
 
 const BackIcon = ({ onPress }) => (
-    <View style={styles.backIconCircle}>
-        <Button onPress={onPress} style={styles.hamburger}>
-            <Entypo name="chevron-left" size={22} color={Colors.white} />
-        </Button>
+    <View style={styles.logo}>
+            <Entypo onPress={onPress} name="chevron-left" size={30} color={Colors.white} />
     </View>
 );
 
@@ -56,12 +54,16 @@ const CustomHeader = () => {
                     <BackIcon onPress={handleBack} />
                 ) : (
                     <View style={styles.logo}>
-                        <Ionicons name="construct" size={30} color="#FFFFFF" />
+                        <Image
+                            source={require('@/assets/images/logo-rldsupport.png')}
+                            style={styles.logoImg}
+                            resizeMode="contain"
+                        />
                     </View>
                 )}
 
                 <Text white text60 uppercase>
-                    FSM
+                    RLD Support
                 </Text>
 
                 <View style={styles.sideSlot}>
@@ -84,13 +86,13 @@ const CustomHeader = () => {
 
 const RootLayout = () => {
     return (
-        <Stack
-            screenOptions={{
-                header: ({ options }) => (
-                    <CustomHeader title={options.title ?? "FSM"} />
-                )
-            }}
-        />
+            <Stack
+                screenOptions={{
+                    header: ({ options }) => (
+                        <CustomHeader title={options.title ?? "FSM"} />
+                    )
+                }}
+            />
     )
 }
 
@@ -127,10 +129,21 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: "100%",
         justifyContent: "center",
-        backgroundColor: Colors.violet20,
+        backgroundColor: Colors.violet50,
         width: 50,
         height: 50,
-        marginHorizontal: 10
+        marginHorizontal: 10,
+        overflow: 'hidden',
+    },
+    logoImg: {
+        width: 38,
+        height: 38,
+    },
+    backbutton: {
+        width: 50,
+        height: 50,
+        marginHorizontal: 10,
+        borderRadius: "100%"
     },
     avatarRing: {
         borderRadius: 999,

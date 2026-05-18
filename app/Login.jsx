@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { Buffer } from 'buffer';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Button, Colors, Text, TextField, View } from 'react-native-ui-lib';
 export default function Login() {
     const [username, setusername] = useState('');
@@ -69,8 +69,9 @@ export default function Login() {
             await loginSuccess(
                 `${apiKey}:${apiSecret}`,
                 {
-                    name: data.message.full_name ?? username,
-                    email: data.message.email ?? null,
+                    name: data.full_name ?? null,
+                    email: data?.message?.email ?? null,
+                    user : data?.message?.username ?? null
                 }
             );
         } catch (e) {
@@ -101,10 +102,12 @@ export default function Login() {
             >
                 {/* Header / Logo area */}
                 <View style={styles.headerArea}>
-                    <View style={styles.logoCircle}>
-                        <Ionicons name="construct" size={40} color="#FFFFFF" />
-                    </View>
-                    <Text style={styles.appName}>Field Service</Text>
+                    <Image
+                        source={require('@/assets/images/logo-rldsupport.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.appName}>RLD Support</Text>
                     <Text style={styles.subtitle}>Sign in to continue</Text>
                 </View>
 
@@ -236,19 +239,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 40,
     },
-    logoCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: Colors.violet20,
-        alignItems: 'center',
-        justifyContent: 'center',
+    logo: {
+        width: 120,
+        height: 120,
         marginBottom: 16,
-        shadowColor: Colors.violet20,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 6,
     },
     appName: {
         fontSize: 30,

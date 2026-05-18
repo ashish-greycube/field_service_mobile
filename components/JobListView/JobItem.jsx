@@ -1,6 +1,12 @@
+import { useRouter } from 'expo-router'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { Badge, Card, Colors, Text, View } from 'react-native-ui-lib'
+
+import { format, parse, parseISO } from 'date-fns'
+
+const fmtDate = (d) => d ? format(parseISO(d), 'dd-MM') : ''
+const fmtTime = (t) => t ? format(parse(t, 'HH:mm:ss', new Date()), 'HH:mm') : ''
 
 const STATUS_COLORS = {
   'Open': Colors.blue30,
@@ -15,21 +21,35 @@ const JobItem = ({
   name,
   client,
   job_start_time,
+  job_end_time,
   job_date,
   customer_address,
   job_status,
   job_description,
+  onPress,
 }) => {
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      router.push(`/(screens)/${name}`);
+    }
+  };
+
   return (
     <Card
       style={styles.card}
-      onPress={() => router.push(`/(screens)/(AR)/${name}`)}
+      onPress={handlePress}
       activeOpacity={0.85}
     >
       {/* Left time column */}
       <View style={styles.timeColumn}>
-        <Text style={styles.jobDate}>{job_date}</Text>
-        <Text style={styles.scheduledTime}>{job_start_time}</Text>
+        <Text style={styles.jobDate}>{fmtDate(job_date)}</Text>
+        <Text style={styles.scheduledTime}>{fmtTime(job_start_time)}</Text>
+        <Text style={[styles.scheduledTime, styles.toText]}>To</Text>
+        <Text style={styles.scheduledTime}>{fmtTime(job_end_time)}</Text>
       </View>
 
       {/* Vertical divider bar */}
@@ -37,9 +57,9 @@ const JobItem = ({
 
       {/* Middle content column */}
       <View style={styles.contentColumn}>
-        <Text style={styles.jobId} numberOfLines={1}>{name}</Text>
+        <Text style={styles.jobId} numberOfLines={1}>#{name}</Text>
         <Text style={styles.customerName} numberOfLines={1}>{client}</Text>
-        <Text style={styles.address} numberOfLines={1}>{customer_address}</Text>
+        <Text style={styles.address} numberOfLines={1}>{customer_address.replace(/<[^>]*>?/gm, '')}</Text>
         <Text style={styles.description} numberOfLines={2}>{job_description}</Text>
       </View>
 
@@ -82,10 +102,15 @@ const styles = StyleSheet.create({
     color: Colors.grey40,
     marginTop: 2,
   },
+  toText: {
+    alignSelf: 'stretch',
+    textAlign: 'center',
+    paddingRight: 0,
+  },
   divider: {
     width: 3,
     alignSelf: 'stretch',
-    backgroundColor: Colors.blue30,
+    backgroundColor: Colors.violet30,
     borderRadius: 2,
     marginHorizontal: 10,
   },
@@ -99,7 +124,8 @@ const styles = StyleSheet.create({
     color: Colors.grey10,
   },
   customerName: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight : "700",
     color: Colors.grey30,
     marginTop: 2,
   },

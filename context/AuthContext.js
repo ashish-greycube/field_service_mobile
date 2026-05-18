@@ -1,4 +1,5 @@
 import { createAsyncStorage } from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "@/constants/constants";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, {
@@ -8,6 +9,22 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
+async function fetchUserImage(token, email) {
+  try {
+    const res = await fetch(
+      `${BASE_URL}api/resource/User/${encodeURIComponent(email)}`,
+      { headers: { Authorization: `token ${token}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const img = data?.data?.user_image;
+    if (!img) return null;
+    return img.startsWith("http") ? img : `${BASE_URL}${img.replace(/^\//, "")}`;
+  } catch {
+    return null;
+  }
+}
 
 const storage = createAsyncStorage("appDB");
 
@@ -39,7 +56,18 @@ export function AuthProvider({ children }) {
           setFrappeToken(token);
           setIsAuthenticated(true);
           const stored = await storage.getItem(USER_INFO_KEY);
-          if (stored) setUserInfo(JSON.parse(stored));
+          const cached = stored ? JSON.parse(stored) : null;
+          if (cached) setUserInfo(cached);
+          // Refresh user image from Frappe in the background
+          if (cached?.email) {
+            fetchUserImage(token, cached.email).then((freshImage) => {
+              if (freshImage && freshImage !== cached.user_image) {
+                const updated = { ...cached, user_image: freshImage };
+                setUserInfo(updated);
+                storage.setItem(USER_INFO_KEY, JSON.stringify(updated));
+              }
+            });
+          }
         }
       } catch (e) {
         console.error("Failed to restore session:", e);
@@ -56,8 +84,10 @@ export function AuthProvider({ children }) {
     setFrappeToken(token);
 
     if (info) {
-      setUserInfo(info);
-      await storage.setItem(USER_INFO_KEY, JSON.stringify(info));
+      const user_image = info.email ? await fetchUserImage(token, info.email) : null;
+      const fullInfo = { ...info, ...(user_image ? { user_image } : {}) };
+      setUserInfo(fullInfo);
+      await storage.setItem(USER_INFO_KEY, JSON.stringify(fullInfo));
     }
     setIsAuthenticated(true);
     router.replace("/(screens)/MainScreen");
